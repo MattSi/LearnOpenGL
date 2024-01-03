@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 
-set(SOURCES src/main.cpp)
+set(SOURCES src/main.cpp src/uniform.cpp src/interpolation.cpp)
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 file(GLOB MY_VERT "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert")

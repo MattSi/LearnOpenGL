@@ -11,14 +11,16 @@ find_package(OpenGL REQUIRED)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/deps/glfw-3.3.9")  # Replace 'path/to/glfw' with the actual path to GLFW source
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+configure_file(configuration/root_directory.h.in configuration/root_directory.h)
+include_directories(${CMAKE_BINARY_DIR}/configuration)
+
 # Add Glad source files (if necessary)
 add_library(glad src/glad.c)
+set(LIBS ${LIBS} glad)
+add_library(STB_IMAGE "src/stb_image.cpp")
+set(LIBS ${LIBS} STB_IMAGE)
 
 
 add_subdirectory(proj6_shader)
-# Add your own source files
-
-
-
-# If using additional libraries (e.g., OpenGL), add them here
-# target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARY})
+add_subdirectory(proj7_texture)
