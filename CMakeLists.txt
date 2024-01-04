@@ -24,3 +24,4 @@ set(LIBS ${LIBS} STB_IMAGE)
 
 add_subdirectory(proj6_shader)
 add_subdirectory(proj7_texture)
+add_subdirectory(proj8_trans)

@@ -1,8 +1,8 @@
-#include "texture.h"
+#include "combine_tex.h"
 
 
 int main(int argc, char *argv[]){
 
-	texture(argc, argv);
+	combine_tex(argc, argv);
 	return 0;
 }

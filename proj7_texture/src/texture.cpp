@@ -1,8 +1,9 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <Windows.h>
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include "texture.h"
 #include "filesystem.h"
 #include "stb_image.h"
@@ -65,8 +66,8 @@ int texture(int argc, char* argv[]) {
 		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = {
-		0, 1, 3, // first triangle
-		1, 2, 0  // second triangle
+		0, 1, 2, // first triangle
+		1, 2, 3  // second triangle
 	};
 	unsigned int VAO, VBO, EBO;
 	glGenVertexArrays(1, &VAO);
@@ -109,6 +110,7 @@ int texture(int argc, char* argv[]) {
 
 	// load image, create texture and generate mipmaps
 	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load(FileSystem::getPath("resources/textures/container.jpg").c_str(), &width, &height, &nrChannels, 0);
 
 	if (data) {
@@ -131,12 +133,12 @@ int texture(int argc, char* argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// bind Texture
-		glBindTexture(GL_TEXTURE_2D, texture);
+		//glBindTexture(GL_TEXTURE_2D, texture);
 
 		// render container
 		glUseProgram(program_id);
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
