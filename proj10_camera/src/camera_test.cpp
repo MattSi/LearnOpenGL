@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include "filesystem.h"
-#include "coords.h"
+#include "camera_test.h"
 #include "stb_image.h"
 #include "cyMatrix.h"
 #include "cyGL.h"
@@ -20,15 +20,12 @@ static const unsigned int SCR_HEIGHT = 600;
 
 static cyGLSLProgram program;
 static GLuint program_id;
-static float fov = 45.0f;
-static float vx = 0.0f;
-static float vy = 0.0f;
-static float vz = -3.0f;
+
 
 
 static void CompileProgram() {
     bool result;
-    if (!(result = program.BuildFiles("p9_coords.vert", "p9_coords.frag"))) {
+    if (!(result = program.BuildFiles("p10_camera.vert", "p10_camera.frag"))) {
         fprintf(stderr, "Error: program compiliation failed.\n");
         exit(1);
     }
@@ -37,7 +34,7 @@ static void CompileProgram() {
 }
 
 
-int coords(int argc, char* argv[]) {
+int camera_test(int argc, char* argv[]) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -45,7 +42,7 @@ int coords(int argc, char* argv[]) {
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Project 9, Coords", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Project 10, Camera", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -107,11 +104,19 @@ int coords(int argc, char* argv[]) {
        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
-    unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
 
+    glm::vec3 cubePositions[] = {
+       glm::vec3(0.0f,  0.0f,  0.0f),
+       glm::vec3(2.0f,  5.0f, -15.0f),
+       glm::vec3(-1.5f, -2.2f, -2.5f),
+       glm::vec3(-3.8f, -2.0f, -12.3f),
+       glm::vec3(2.4f, -0.4f, -3.5f),
+       glm::vec3(-1.7f,  3.0f, -7.5f),
+       glm::vec3(1.3f, -2.0f, -2.5f),
+       glm::vec3(1.5f,  2.0f, -2.5f),
+       glm::vec3(1.5f,  0.2f, -1.5f),
+       glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
 
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
@@ -185,6 +190,19 @@ int coords(int argc, char* argv[]) {
     glUniform1i(glGetUniformLocation(program_id, "texture1"), 0);
     glUniform1i(glGetUniformLocation(program_id, "texture2"), 1);
 
+    
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 proj = glm::mat4(1.0f);
+    proj = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+   
+    GLuint modelLoc = glGetUniformLocation(program_id, "model");
+    GLuint viewLog = glGetUniformLocation(program_id, "view");
+    GLuint projLog = glGetUniformLocation(program_id, "projection");
+    glUniformMatrix4fv(projLog, 1, GL_FALSE, glm::value_ptr(proj));
+    // The third parameter ask us if we want to transpose our matrix, that is to swap the columns and rows
+    
+    
+
     while (!glfwWindowShouldClose(window)) {
         process_input(window);
 
@@ -199,33 +217,26 @@ int coords(int argc, char* argv[]) {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
         // get matrix's uniform location and set matrix
         glUseProgram(program_id);
 
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 proj = glm::mat4(1.0f);
-
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-        view = glm::translate(view, glm::vec3(vx, vy, vz));
-        proj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        // proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
-
-        GLuint modelLoc = glGetUniformLocation(program_id, "model");
-        GLuint viewLog = glGetUniformLocation(program_id, "view");
-        GLuint projLog = glGetUniformLocation(program_id, "projection");
-
-        // The third parameter ask us if we want to transpose our matrix, that is to swap the columns and rows
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        float radius = 10.0f;
+        float camX = static_cast<float>(sin(glfwGetTime()) * radius);
+        float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
+        view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glUniformMatrix4fv(viewLog, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projLog, 1, GL_FALSE, glm::value_ptr(proj));
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for (GLuint i = 0; i < sizeof(cubePositions) / sizeof(cubePositions[0]); i++) {
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            model = glm::rotate(model, glm::radians(20.0f * i), glm::vec3(1.0f, 0.3f, 0.5f));
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -245,42 +256,6 @@ static void process_input(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        fov -= 0.1f;
-        std::cout << "GLFW_KEY_DOWN pressed. FOV: " << fov << std::endl;
-    }
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        fov += 0.1f;
-        std::cout << "GLFW_KEY_UP pressed. FOV: " << fov << std::endl;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
-        vx += 0.1f;
-        std::cout << "GLFW_KEY_Y pressed. VX: " << vx << std::endl;
-    }
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
-        vx -= 0.1f;
-        std::cout << "GLFW_KEY_H pressed. VX: " << vx << std::endl;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) {
-        vy += 0.01f;
-        std::cout << "GLFW_KEY_U pressed. VY: " << vy << std::endl;
-    }
-    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
-        vy -= 0.01f;
-        std::cout << "GLFW_KEY_J pressed. VY: " << vy << std::endl;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-        vz += 0.01f;
-        std::cout << "GLFW_KEY_I pressed. VZ: " << vz << std::endl;
-    }
-    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
-        vz -= 0.01f;
-        std::cout << "GLFW_KEY_K pressed. VZ: " << vz << std::endl;
-    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

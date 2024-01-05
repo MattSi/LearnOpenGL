@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(proj9_coords)
+project(proj10_camera)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 
-set(SOURCES src/main.cpp src/coords.cpp src/multiple.cpp)
+set(SOURCES src/main.cpp src/camera_test.cpp src/camera_mov.cpp)
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 file(GLOB MY_VERT "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert")

@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include "filesystem.h"
-#include "coords.h"
+#include "multiple.h"
 #include "stb_image.h"
 #include "cyMatrix.h"
 #include "cyGL.h"
@@ -37,7 +37,7 @@ static void CompileProgram() {
 }
 
 
-int coords(int argc, char* argv[]) {
+int multiple(int argc, char* argv[]) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -112,13 +112,25 @@ int coords(int argc, char* argv[]) {
         1, 2, 3  // second triangle
     };
 
+    glm::vec3 cubePosition[] = {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f,  2.0f, -2.5f),
+        glm::vec3(1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
 
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
     glBindVertexArray(VAO);
-    
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -210,7 +222,7 @@ int coords(int argc, char* argv[]) {
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 proj = glm::mat4(1.0f);
 
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+       // model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
         view = glm::translate(view, glm::vec3(vx, vy, vz));
         proj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
@@ -220,12 +232,19 @@ int coords(int argc, char* argv[]) {
         GLuint projLog = glGetUniformLocation(program_id, "projection");
 
         // The third parameter ask us if we want to transpose our matrix, that is to swap the columns and rows
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        //glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLog, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projLog, 1, GL_FALSE, glm::value_ptr(proj));
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (GLuint i = 0; i < sizeof(cubePosition) / sizeof(cubePosition[0]); i++) {
+            model = glm::translate(model, cubePosition[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+        
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -235,7 +254,7 @@ int coords(int argc, char* argv[]) {
     glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
-	return 0;
+    return 0;
 }
 
 

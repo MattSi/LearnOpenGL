@@ -1,8 +1,10 @@
 #include "coords.h"
+#include "multiple.h"
 
 int main(int argc, char* argv[]) {
 
 	
-	coords(argc, argv);
+	multiple
+	(argc, argv);
 	return 0;
 }
