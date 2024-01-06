@@ -5,11 +5,12 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <camera.h>
+#include <shader_m.h>
 #include "colors.h"
 #include "filesystem.h"
 #include "stb_image.h"
-#include "cyMatrix.h"
-#include "cyGL.h"
+//#include "cyMatrix.h"
+//#include "cyGL.h"
 //#include "cyTriMesh.h"
 
 static void resize(GLFWwindow* window, int width, int height);
@@ -20,9 +21,10 @@ static void process_scroll(GLFWwindow* window, double xoffset, double yoffset);
 static const unsigned int SCR_WIDTH = 1024;
 static const unsigned int SCR_HEIGHT = 768;
 
-static cyGLSLProgram program;
-static GLuint lightingShader;
-static GLuint lightCubeShader;
+//static cyGLSLProgram program;
+// static GLuint lightingShader;
+// static GLuint lightCubeShader;
+
 
 // camera 
 static Camera camera(glm::vec3(0.0f, 0.0f, 13.0f));
@@ -33,18 +35,6 @@ static float lastY = SCR_HEIGHT / 2.0f;
 static float deltaTime = 0.0f;
 static float lastFrame = 0.0f;
 static glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-
-
-static GLuint CompileProgram(const char* vert, const char* frag) {
-    bool result;
-    if (!(result = program.BuildFiles(vert, frag))) {
-        fprintf(stderr, "Error: program %s, %s compiliation failed.\n", vert, frag);
-        exit(1);
-    }
-
-    //program.Bind();
-    return program.GetID();
-}
 
 int colors(int argc, char* argv[]) {
     glfwInit();
@@ -78,8 +68,11 @@ int colors(int argc, char* argv[]) {
         return -1;
     }
     glEnable(GL_DEPTH_TEST);
-    lightingShader = CompileProgram("colors.vs", "colors.fs");
-    lightCubeShader = CompileProgram("light_cube.vs", "light_cube.fs");
+    // lightingShader = CompileProgram("colors.vs", "colors.fs");
+
+    Shader lightingShader("colors.vs", "colors.fs");
+    Shader lightCubeShader("light_cube.vs", "light_cube.fs");
+    
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -177,33 +170,34 @@ int colors(int argc, char* argv[]) {
 
 
 
-        glUseProgram(lightingShader);
-        glUniform3f(glGetUniformLocation(lightingShader, "objectColor"), 1.0f, 0.5f, 0.31f);
-        glUniform3f(glGetUniformLocation(lightingShader, "lightColor"), 1.0f, 1.0f, 0.0f);
+        lightingShader.use();
+        lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+        lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
         // pass projection matrix to shader
         glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
 
-        glUniformMatrix4fv(glGetUniformLocation(lightingShader, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
-        glUniformMatrix4fv(glGetUniformLocation(lightingShader, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        lightingShader.setMat4("projection", proj);
+        lightingShader.setMat4("view", view);
 
         // world transformation
         glm::mat4 model = glm::mat4(1.0f);
-        glUniformMatrix4fv(glGetUniformLocation(lightingShader, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        lightingShader.setMat4("model", model);
 
         glBindVertexArray(cubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
         // also draw the lamp object
-        glUseProgram(lightCubeShader);
-        glUniformMatrix4fv(glGetUniformLocation(lightCubeShader, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
-        glUniformMatrix4fv(glGetUniformLocation(lightCubeShader, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        lightCubeShader.use();
+        lightCubeShader.setMat4("projection", proj);
+        lightCubeShader.setMat4("view", view);
+     
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.2f));
-        glUniformMatrix4fv(glGetUniformLocation(lightCubeShader, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        lightCubeShader.setMat4("model", model);
         glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
