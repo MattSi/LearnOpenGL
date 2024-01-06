@@ -74,6 +74,8 @@ public:
 		if (direction == RIGHT) {
 			Position += Right * velocity;
 		}
+
+		//Position.y = 0.0f;
 	}
 
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true) {
@@ -101,8 +103,8 @@ public:
 		if (Zoom < 1.0f) {
 			Zoom = 1.0f;
 		}
-		if (Zoom > 45.0f) {
-			Zoom = 45.0f;
+		if (Zoom > 89.0f) {
+			Zoom = 89.0f;
 		}
 	}
 
