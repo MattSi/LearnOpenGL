@@ -6,10 +6,9 @@
 #include <glm/ext.hpp>
 #include <camera.h>
 #include <shader_m.h>
-#include "specular.h"
+#include "material.h"
 #include "filesystem.h"
 #include "stb_image.h"
-
 
 static void resize(GLFWwindow* window, int width, int height);
 static void process_input(GLFWwindow* window);
@@ -28,9 +27,10 @@ static bool firstMouse = true;
 
 static float deltaTime = 0.0f;
 static float lastFrame = 0.0f;
-static glm::vec3 lightPos(10.2f, 1.0f, 2.0f);
+static glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
-int specular(int argc, char* argv[]) {
+
+int material(int argc, char* argv[]) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -38,7 +38,7 @@ int specular(int argc, char* argv[]) {
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Project 12, Specular", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Project 13, Material", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -63,7 +63,7 @@ int specular(int argc, char* argv[]) {
     }
     glEnable(GL_DEPTH_TEST);
 
-    Shader lightingShader("specular_basic_lighting.vs", "specular_basic_lighting.fs");
+    Shader lightingShader("material.vs", "material.fs");
     Shader lightCubeShader("light_cube.vs", "light_cube.fs");
 
 
@@ -168,9 +168,24 @@ int specular(int argc, char* argv[]) {
 
 
         lightingShader.use();
-        lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-        lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-        lightingShader.setVec3("lightPos", lightPos);
+        lightingShader.setVec3("light.position", lightPos);
+
+        // light properties
+        glm::vec3 lightColor;
+        lightColor.x = static_cast<float>(sin(glfwGetTime() * 2.0));
+        lightColor.y = static_cast<float>(sin(glfwGetTime() * 0.7));
+        lightColor.z = static_cast<float>(sin(glfwGetTime() * 1.3));
+        glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+        lightingShader.setVec3("light.ambient", ambientColor);
+        lightingShader.setVec3("light.diffuse", diffuseColor);
+        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+        // material properties
+        lightingShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+        lightingShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f); 
+        lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        lightingShader.setFloat("material.shininess", 32.0f);
 
         lightPos.x = static_cast<float>(1.0f + sin(glfwGetTime()) * 2.0f);
         lightPos.y = static_cast<float>(sin(glfwGetTime() / 2.0f) * 1.0f);
@@ -180,27 +195,16 @@ int specular(int argc, char* argv[]) {
 
         lightingShader.setMat4("projection", proj);
         lightingShader.setMat4("view", view);
-        
+
 
         // world transformation
         glm::mat4 model = glm::mat4(1.0f);
         // model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
-       
-
+        lightingShader.setMat4("model", model);
+        lightingShader.setMat4("inv_view_model", glm::inverse(view * model));
+          
         glBindVertexArray(cubeVAO);
-
-        for (unsigned int i = 0; i < sizeof(cubePositions) / sizeof(cubePositions[0]); i++) {
-           glm::mat4 model = glm::mat4(1.0f);
-           model = glm::translate(model, cubePositions[i]);
-           model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
-           lightingShader.setMat4("model", model);
-           lightingShader.setMat4("inv_view_model", glm::inverse(view* model));
-           
-
-           glDrawArrays(GL_TRIANGLES, 0, 36);
-       }
-
-        // glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
         // also draw the lamp object
@@ -212,10 +216,23 @@ int specular(int argc, char* argv[]) {
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.2f));
         lightCubeShader.setMat4("model", model);
+        lightCubeShader.setVec3("light.ambient", ambientColor);
+        lightCubeShader.setVec3("light.diffuse", diffuseColor);
+        lightCubeShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
         glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
+         
+        /*       for (unsigned int i = 0; i < sizeof(cubePositions) / sizeof(cubePositions[0]); i++) {
+                   glm::mat4 model = glm::mat4(1.0f);
+                   model = glm::translate(model, cubePositions[i]);
+                   float angle = 20.0f * i;
+                   model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
+                   GLuint modelLog = glGetUniformLocation(program_id, "model");
+                   glUniformMatrix4fv(modelLog, 1, GL_FALSE, glm::value_ptr(model));
 
+                   glDrawArrays(GL_TRIANGLES, 0, 36);
+               }*/
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -227,7 +244,8 @@ int specular(int argc, char* argv[]) {
     glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
-    return 0;
+
+	return 0;
 }
 
 void process_input(GLFWwindow* window) {
@@ -270,5 +288,4 @@ static void process_mouse(GLFWwindow* window, double xposIn, double yposIn) {
 static void process_scroll(GLFWwindow* window, double xoffset, double yoffset) {
     camera.ProcessMouseScroll(yoffset);
 }
-
 
