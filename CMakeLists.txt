@@ -24,8 +24,7 @@ add_library(glad src/glad.c)
 set(LIBS ${LIBS} glad)
 add_library(STB_IMAGE "src/stb_image.cpp")
 set(LIBS ${LIBS} STB_IMAGE)
-# set(LIBS ${LIBS} assimp-vc143-mt)
-
+set(LIBS ${LIBS} assimp::assimp)
 
 
 set(PROJECT_DLLS_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)

@@ -48,4 +48,4 @@ foreach(CurrentHeaderFile IN LISTS MY_FRAG)
 endforeach()
  
  
-target_link_libraries(${PROJECT_NAME}  assimp::assimp ${LIBS} glfw)
+target_link_libraries(${PROJECT_NAME} ${LIBS} glfw)
