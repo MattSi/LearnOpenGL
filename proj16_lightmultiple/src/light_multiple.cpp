@@ -9,7 +9,7 @@
 #include "light_multiple.h"
 #include "filesystem.h"
 #include "stb_image.h"
-
+ 
 static void resize(GLFWwindow* window, int width, int height);
 static void process_input(GLFWwindow* window);
 static void process_mouse(GLFWwindow* window, double xposIn, double yposIn);
@@ -17,8 +17,8 @@ static void process_scroll(GLFWwindow* window, double xoffset, double yoffset);
 static GLuint loadTexture(const char* path);
 static const unsigned int SCR_WIDTH = 1024;
 static const unsigned int SCR_HEIGHT = 768;
-
-
+   
+ 
 // camera 
 static Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 static float lastX = SCR_WIDTH / 2.0f;
@@ -289,7 +289,7 @@ int light_multiple(int argc, char* argv[]) {
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
          
-
+         
          
          
 

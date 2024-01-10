@@ -33,4 +33,18 @@ foreach(CurrentHeaderFile IN LISTS MY_FRAG)
         COMMENT "Copying Vertex shader to build directory"
 	)
 endforeach()
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} glfw  glad STB_IMAGE)
+
+
+file(GLOB MY_FRAG "${PROJECT_DLLS_DIRECTORY}/*.dll")
+foreach(CurrentHeaderFile IN LISTS MY_FRAG)
+    add_custom_command(
+        TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying files"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different   
+            "${CurrentHeaderFile}"
+            "$(OutDir)"
+        COMMENT "Copying dll files to build directory"
+	)
+endforeach()
+ 
+target_link_libraries(${PROJECT_NAME} ${LIBS} glfw)
