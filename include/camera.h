@@ -61,7 +61,7 @@ public:
 
 	// process input received from any keyboard-like input system.
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime) {
-		float velocity = MovementSpeed * deltaTime;
+		float velocity = MovementSpeed * deltaTime *3;
 		if (direction == FORWARD) {
 			Position += Front * velocity;
 		}

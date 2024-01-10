@@ -10,7 +10,7 @@
 #include "stb_image.h"
 #include "model.h"
 
-
+ 
 static void resize(GLFWwindow* window, int width, int height);
 static void process_input(GLFWwindow* window);
 static void process_mouse(GLFWwindow* window, double xposIn, double yposIn);
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Project 15, LightCasting - direction", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Project 17, modeling", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
