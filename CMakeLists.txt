@@ -24,7 +24,7 @@ add_library(glad src/glad.c)
 set(LIBS ${LIBS} glad)
 add_library(STB_IMAGE "src/stb_image.cpp")
 set(LIBS ${LIBS} STB_IMAGE)
-#set
+# set(LIBS ${LIBS} assimp-vc143-mt)
 
 
 
@@ -41,3 +41,4 @@ add_subdirectory(proj13_material)
 add_subdirectory(proj14_lightmap)
 add_subdirectory(proj15_lightcast)
 add_subdirectory(proj16_lightmultiple)
+add_subdirectory(proj17_models)
