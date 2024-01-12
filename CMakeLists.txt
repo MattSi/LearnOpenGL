@@ -16,6 +16,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(assimp_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib/cmake/assimp-5.3")
 find_package(assimp REQUIRED)
 
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 configure_file(configuration/root_directory.h.in configuration/root_directory.h)
 include_directories(${CMAKE_BINARY_DIR}/configuration)
 
@@ -42,3 +43,5 @@ add_subdirectory(proj15_lightcast)
 add_subdirectory(proj16_lightmultiple)
 add_subdirectory(proj17_models)
 add_subdirectory(proj18_depth_testing)
+add_subdirectory(proj19_stencil_testing)
+add_subdirectory(proj20_blending)
