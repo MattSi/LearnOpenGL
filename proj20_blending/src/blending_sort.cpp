@@ -1,12 +1,14 @@
 #include <Windows.h>
 #include <iostream>
+#include <vector>
+#include <map>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <camera.h>
 #include <shader_m.h>
-#include "blending_discard.h"
+#include "blending_sort.h"
 #include "filesystem.h"
 #include "stb_image.h"
 
@@ -31,7 +33,7 @@ static glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 static glm::vec3 lightDirection(-0.2f, -1.0f, -0.3f);
 
 
-int blending_discard(int argc, char* argv[]) {
+int blending_sort(int argc, char* argv[]) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -39,7 +41,7 @@ int blending_discard(int argc, char* argv[]) {
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Project 20, Blending - discard", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Project 20, Blending - sorting", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -64,10 +66,12 @@ int blending_discard(int argc, char* argv[]) {
     }
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    Shader shader("blending_discard.vs", "blending_discard.fs");
-   
-
+    Shader shader("blending_sort.vs", "blending_sort.fs");
+    
+     
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -181,12 +185,12 @@ int blending_discard(int argc, char* argv[]) {
    // -------------
     GLuint cubeTexture = loadTexture(FileSystem::getPath("resources/textures/marble.jpg").c_str());
     GLuint floorTexture = loadTexture(FileSystem::getPath("resources/textures/metal.png").c_str());
-    GLuint transparentTexture = loadTexture(FileSystem::getPath("resources/textures/grass.png").c_str());
+    GLuint transparentTexture = loadTexture(FileSystem::getPath("resources/textures/window.png").c_str());
 
 
     // transparent vegetation locations
     // --------------------------------
-    glm::vec3 vegetation[] = {
+    glm::vec3 windows[] = {
         glm::vec3(-1.5f, 0.0f, -0.48f),
         glm::vec3(1.5f, 0.0f, 0.51f),
         glm::vec3(0.0f, 0.0f, 0.7f),
@@ -197,13 +201,21 @@ int blending_discard(int argc, char* argv[]) {
     shader.use();
     shader.setInt("texture1", 0);
    
-
+   
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         process_input(window);
+
+        
+        std::map<float, glm::vec3> sorted;
+        for (unsigned int i = 0; i < sizeof(windows) / sizeof(windows[0]); i++) {
+            float distance = glm::length(camera.Position - windows[i]);
+            sorted[distance] = windows[i];
+        }
+
 
         // render 
          // ------
@@ -244,9 +256,12 @@ int blending_discard(int argc, char* argv[]) {
         // vegetation
         glBindVertexArray(transparentVAO);
         glBindTexture(GL_TEXTURE_2D, transparentTexture);
-        for (unsigned int i = 0; i < sizeof(vegetation) / sizeof(vegetation[0]); i++) {
+
+        
+        for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+        {
             model = glm::mat4(1.0f);
-            model = glm::translate(model, vegetation[i]);
+            model = glm::translate(model, it->second);
             shader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
