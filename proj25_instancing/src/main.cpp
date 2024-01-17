@@ -1,9 +1,9 @@
-#include "instancing_quad.h"
+#include "asteroids_instancing.h"
 
 
 int main(int argc, char* argv[]) {
 
-	instancing_quad(argc, argv);
+	asteroids_instancing(argc, argv);
 
 	return 0;
 }
