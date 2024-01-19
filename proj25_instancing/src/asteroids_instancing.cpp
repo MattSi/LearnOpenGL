@@ -23,7 +23,7 @@ static const unsigned int SCR_HEIGHT = 768;
  
  
 // camera 
-static Camera camera(glm::vec3(0.0f, 0.0f, 155.0f));
+static Camera camera(glm::vec3(0.0f, 20.0f, 255.0f));
 static float lastX = SCR_WIDTH / 2.0f;
 static float lastY = SCR_HEIGHT / 2.0f;
 static bool firstMouse = true;
@@ -167,7 +167,7 @@ int asteroids_instancing(int argc, char* argv[]) {
         // draw planet
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(12.0f, 12.0f, 12.0f));
+        model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
         planetShader.setMat4("model", model);
         planet.Draw(planetShader);
 
